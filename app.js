@@ -1,19 +1,41 @@
 const express = require('express')
+const bodyParser = require('body-parser')
+const HttpError = require('./errors/http-error')
+const NotFoundError = require('./errors/not-found')
+
 const app = express()
-const PORT = process.env.PORT || 8080
 
-app.get('/', (req, res) => {
-  res.send('Bonjour à tous')
+const courselistRouter = require('./controllers/courselist-controller')
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+// app.get('/', (req, res, next) => {
+//   req.send('OK')
+// })
+
+app.use('/course-lists', courselistRouter)
+
+app.use((req, res, next) => {
+  return next(new NotFoundError())
 })
 
-app.get('/courses', (req, res) => {
-  res.send('Mes courses' + req.params.userId)
+app.use((err, req, res, next) => {
+  if (!(err instanceof HttpError)) {
+    console.error(err)
+    err = new HttpError(err.message || 'Unknown error')
+  }
+
+  res.status(err.statusCode)
+  res.json({
+    error: err
+  })
 })
 
-app.use((req, res) => {
-  res.send(404, 'Not Found')
-})
+if (!module.parent) {
+  app.listen(3000, () => {
+    console.log('Server launched on port 3000')
+  })
+}
 
-app.listen(PORT, () => {
-  console.log('Serveur sur le port : ', PORT)
-})
+module.exports = app
