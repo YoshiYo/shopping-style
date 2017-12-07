@@ -6,7 +6,6 @@ install:
   - npm install
 script:
   - npm test
-before_install:
-  - pip install --user coveralls
 after_success:
-  - coveralls --file coverage/lcov.info --disable search
+- npm run coveralls
+  
