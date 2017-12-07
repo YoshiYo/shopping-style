@@ -9,10 +9,9 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "mocha ./test/**/*.spec.js --reporter dot",
+    "test": "nyc mocha ./test/**/*.spec.js --reporter dot",
     "test:watch": "mocha -w ./test/**/*.spec.js --reporter dot",
-    "cover": "istanbul cover _mocha",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "author": "",
   "license": "ISC",
@@ -23,6 +22,7 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
+    "coveralls": "^3.0.0",
     "install": "^0.10.2",
     "istanbul": "^0.4.5",
     "mocha": "^4.0.1",
