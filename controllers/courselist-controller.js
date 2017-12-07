@@ -63,16 +63,9 @@ router.post('/item', (req, res, next) => {
 
 router.get('/', (req, res, next) => {
 
-
-  if(courseListCollection.length !== 0){
       res.json({
         data: courseListCollection
       })
-  }else {
-    res.json({
-      data: "Aucune liste n'a été créé"
-    })
-  }
 })
 
 
@@ -96,31 +89,32 @@ router.get('/item', (req, res, next) => {
 
 })
 
+
 router.patch('/item', (req, res, next) => {
 
-    if (!req.body.listId) {
-    return next(new BadRequestError('VALIDATION', 'Missing list ID'))
+    if (!req.body.listName) {
+    return next(new BadRequestError('VALIDATION', 'Missing list name'))
+  }
+   const listName = req.body.listName
+   const list = find(courseListCollection, { name : listName })
+
+    if (!list) {
+    return next(new BadRequestError('VALIDATION', 'Unknown list name'))
   }
 
-  if (!req.body.itemId) {
-    return next(new BadRequestError('VALIDATION', 'Missing item ID'))
+  if (!req.body.itemName) {
+    return next(new BadRequestError('VALIDATION', 'Missing item name'))
+  }
+  const itemName = req.body.itemName
+  const item = find(list.items, {name : itemName})
+
+  if (!item) {
+    return next(new BadRequestError('VALIDATION', 'Unknown item name'))
   }
 
-  const listId = req.body.listId
-  const itemId = req.body.itemId
-
-   // Check if id exist
-  const list = find(courseListCollection, { listId })
-
-
-  if (!list) {
-    return next(new BadRequestError('VALIDATION', 'Unknown list ID'))
-  }
-
-  const item = find(list, { itemId })
-
+  item.check = 'ok'
   res.json({
-      data: result.items
+      data: item
   })
 
 })

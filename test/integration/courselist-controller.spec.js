@@ -118,6 +118,7 @@ describe('CourselistController', () => {
 
 
     describe('When I get all courseList (GET /course-lists)', () => {
+      beforeEach(() => { courseListFixture.up() })
       afterEach(() => { courseListFixture.down() })
     it('should  succesfuly get all courseList', () => {
       
@@ -127,10 +128,9 @@ describe('CourselistController', () => {
       return request(app)
         .get('/course-lists')
         .then((res) => {
+          console.log("result",result)
           res.status.should.equal(200)
-          expect(res.body.data).to.be.an('array')
-          res.body.data.should.eql(mockData)
-          
+          expect(res.body.data).to.be.an('array')          
           res.body.data.should.eql(result)
 
         })
@@ -138,7 +138,7 @@ describe('CourselistController', () => {
   })
 
   describe('When I add item in courseList (POST /course-lists/item)', () => {
-
+    beforeEach(() => { courseListFixture.up() })
     afterEach(() => { courseListFixture.down() })
     it('should reject with a 400 when no name is given', () => {
       return request(app).post('/course-lists/item').then((res) => {
@@ -249,8 +249,7 @@ describe('CourselistController', () => {
           expect(res.body.data).to.be.an('array')
 
          const result = find(db.courseList, { name } )
-          console.log("test",result.items)
-          console.log("test2",res.body.data)
+
  
           res.body.data.should.eql(result.items)
          
@@ -258,6 +257,92 @@ describe('CourselistController', () => {
     })
   })
 
+    describe('When I check one item from one courseList (PATCH /course-list/item)', () => {
+      beforeEach(() => { courseListFixture.up() })
+      afterEach(() => { courseListFixture.down() })
 
+      it('should reject with a 400 when no list name is given', () => {
+      return request(app)
+      .patch('/course-lists/item').then((res) => {
+        res.status.should.equal(400)
+        res.body.should.eql({
+          error: {
+            code: 'VALIDATION',
+            message: 'Missing list name'
+          }
+        })
+      })
+    })
+
+      it('should reject with a 400 when no item name is given', () => {
+      return request(app)
+      .patch('/course-lists/item')
+      .send({listName: 'Toto'})
+      .then((res) => {
+        res.status.should.equal(400)
+        res.body.should.eql({
+          error: {
+            code: 'VALIDATION',
+            message: 'Missing item name'
+          }
+        })
+      })
+    })
+
+
+    it('should reject when list name is not in courseList', () => {
+      return request(app)
+        .patch('/course-lists/item')
+        .send({ listName: 'Unknown'})
+        .then((res) => {
+          res.status.should.equal(400)
+          res.body.should.eql({
+            error: {
+              code: 'VALIDATION',
+              message: 'Unknown list name'
+            }
+          })
+      })
+    })
+
+    it('should reject when item name is not in list', () => {
+      return request(app)
+        .patch('/course-lists/item')
+        .send({ listName: 'Toto', itemName: 'Unknown'})
+        .then((res) => {
+          res.status.should.equal(400)
+          res.body.should.eql({
+            error: {
+              code: 'VALIDATION',
+              message: 'Unknown item name'
+            }
+          })
+      })
+    })
+
+
+    it('should succesfuly check one item from one courseList', () => {
+      
+      const listName = 'Toto'
+      const itemName = 'MyItem'
+
+       
+      return request(app)
+        .patch('/course-lists/item')
+        .send({ listName: listName, itemName: itemName  })
+        .then((res) => {
+          res.status.should.equal(200)
+        
+        expect(res.body.data).to.be.an('object')
+
+        const list = find(db.courseList, { name:listName } )
+        const item = find(list.items, {name : itemName})
+
+        res.body.data.should.have.property('check')
+        res.body.data.should.eql(item)
+         
+        })
+    })
+  })
 
 })
